@@ -319,11 +319,17 @@ class RESTInboundSocket(InboundEventSocket):
                 except KeyError:
                     return
                 # If there are gateways to try again, spawn originate
+                if call_req.state_flag in ('Ringing', 'EarlyMedia'):
+                    self.log.warn("Call Failed (%s) for RequestUUID %s - %s" \
+                                % (str(call_req.state_flag), request_uuid, reason))
                 if call_req.gateways:
                     self.log.debug("Call Failed for RequestUUID %s - Retrying (%s)" \
                                     % (request_uuid, reason))
                     self.spawn_originate(request_uuid)
                     return
+
+                self.log.warn("Call Failed for RequestUUID %s - No more Gateways (%s)" \
+                                % (request_uuid, reason))
                 # else clean call request
                 hangup_url = call_req.hangup_url
 
